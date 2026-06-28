@@ -1,0 +1,128 @@
+{
+  "margin-top": 5,
+  "margin-left": 10,
+  "margin-right": 10,
+  "height": 21,
+  "modules-left": [
+    "clock"
+  ],
+  "modules-center": [
+    "niri/workspaces"
+  ],
+  "modules-right": [
+    "memory",
+    "cpu",
+    "temperature",
+    "disk",
+    "battery",
+    "custom/drun",
+    "custom/powermenu",
+    "pulseaudio",
+    "pulseaudio/slider",
+    "backlight",
+    "backlight/slider"
+  ],
+  "separator": {
+    "format": " | "
+  },
+  "tray": {
+    "icon-size": 21,
+    "spacing": 10,
+    "icons": {
+      "blueman": "bluetooth",
+      "TelegramDesktop": "$HOME/.local/share/icons/hicolor/16x16/apps/telegram.png"
+    }
+  },
+  "niri/workspaces": {
+    "format": "{icon}",
+    "on-click": "activate",
+    "format-icons": {
+      "active": " 󱗜 "
+    },
+    "sort-by-number": true,
+    "persistent-workspaces": {
+      "*": 8,
+      "HDMI-A-1": 5
+    }
+  },
+  "clock": {
+    "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+    "format-alt": "{:%Y-%m-%d}"
+  },
+  "cpu": {
+    "format": " {usage}%",
+    "internal": 5,
+    "tooltip": false
+  },
+  "memory": {
+    "format": " {percentage}%",
+    "interval": 10
+  },
+  "temperature": {
+    "critical-threshold": 80,
+    "format": "{icon}{temperatureC}°C",
+    "format-icons": [
+      "󰎓 "
+    ]
+  },
+  "battery": {
+    "states": {
+      "warning": 30,
+      "critical": 20 
+    },
+    "format": "{icon}{capacity}%",
+    "format-full": "{icon}{capacity}%",
+    "format-charging": " {capacity}%",
+    "format-plugged": " {capacity}%",
+    "format-icons": [
+      " ",
+      " ",
+      " ",
+      " ",
+      " "
+    ],
+    "interval": 5
+  },
+  "pulseaudio": {
+    "format": "{icon}",
+    "rotate": 0,
+    "tooltip-format": "{icon} {desc} // {volume}%",
+    "scroll-step": 5,
+    "format-icons": {
+      "headphone": "󰋎",
+      "hands-free": "",
+      "headset": "",
+      "default": ["","", ""]
+    }
+  },
+  "pulseaudio/slider": {
+    "min": 5,
+    "max": 100,
+    "rotate": 0,
+    "device": "pulseaudio",
+    "scroll-step": 1
+  },
+  "backlight": {
+    "device": "intel_backlight",
+    "format": "{icon}",
+    "format-icons": ["󰃞", "󰃟","󰃠"]
+  },
+  "backlight/slider": {
+    "min": 0,
+    "max": 100,
+    "orientation": "horizontal"
+  },
+  "disk": {
+    "interval": 60,
+    "format": " {percentage_used}%",
+    "path": "/"
+  },
+  "custom/drun": {
+    "format": " ",
+    "on-click": "bash ~/.config/waybar/scripts/drun.sh"
+  },
+  "custom/powermenu": {
+    "format": "⏼ ",
+    "on-click": "bash ~/.config/waybar/scripts/powermenu.sh"
+  }
+}
