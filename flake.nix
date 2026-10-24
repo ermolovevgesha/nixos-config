@@ -4,18 +4,39 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
 
-    home-manager.url = "github:nix-community/home-manager";
+    home-manager.url = "github:nix-community/home-manager/release-26.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    
+    noctalia.url = "github:noctalia-dev/noctalia";
+    noctalia.inputs.nixpkgs.follows = "nixpkgs";
 
-    antigravity-repo.url = "git+https://github.com/numtide/llm-agents.nix"; 
+    ag-unlocker-src.url = "github:confeden/Antigravity";
+    ag-unlocker-src.flake = false;  # это не flake, просто исходники
   };
 
-  outputs = { self, nixpkgs, home-manager, antigravity-repo, ... }@inputs: {
+  outputs = { self, nixpkgs, home-manager, noctalia, ag-unlocker-src, ... }@inputs:
+    let
+      system = "x86_64-linux";
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
+      ag-unlocker-pkg = pkgs.callPackage ./pkgs/ag-unlocker/package.nix {
+        src = ag-unlocker-src;
+      };
+    in {
+    # Запустить без установки: nix run /etc/nixos#ag-unlocker
+    # Собрать:                 nix build /etc/nixos#ag-unlocker
+    packages.${system} = {
+      ag-unlocker = ag-unlocker-pkg;
+      default = ag-unlocker-pkg;
+    };
+
     nixosConfigurations = {
       nixos = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
+        specialArgs = { inherit inputs; };
         modules = [
-          ./hardware-configuration.nix
+          { nixpkgs.hostPlatform = system; }
           ./configuration.nix
 
           home-manager.nixosModules.home-manager
@@ -23,11 +44,9 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
           }
-          ({ pkgs, ... }: {
-            environment.systemPackages = [
-              antigravity-repo.packages.${pkgs.system}.antigravity-cli
-            ];
-          })
+          {
+            environment.systemPackages = [ ag-unlocker-pkg ];
+          }
         ];
       };
     };

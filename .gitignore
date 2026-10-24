@@ -1,0 +1,13 @@
+# Editor backup and swap files
+*.save
+*.save.*
+*.swp
+*~
+.#*
+
+# Nix build outputs
+result
+result-*
+
+# Direnv
+.direnv/

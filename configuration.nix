@@ -1,68 +1,80 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
-
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
-  imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-    ];
+  imports = [
+    ./hardware-configuration.nix
+  ];
 
-  # Bootloader.
-  boot.loader.systemd-boot.enable = false;
-  boot.loader.efi.canTouchEfiVariables = true;
+  # Bootloader
+  boot.loader = {
+    systemd-boot.enable = false;
+    efi.canTouchEfiVariables = true;
+    grub = {
+      enable = true;
+      efiSupport = true;
+      device = "nodev";
+      useOSProber = true;
+    };
+  };
 
-  boot.loader.grub.enable = true;
-  boot.loader.grub.efiSupport = true;
-  boot.loader.grub.device = "nodev";
-  boot.loader.grub.useOSProber = true;
-
-  # Use latest kernel.
+  # Kernel and Hardware
   boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelModules = [ "usbmon" ];
+  boot.initrd.kernelModules = [ "amdgpu" ];
 
-  networking.hostName = "nixos"; # Define your hostname.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+  };
 
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = true;
+  };
 
-  # Enable networking
-  networking.networkmanager.enable = true;
-  services.cloudflare-warp.enable = true;
+  # Networking
+  networking = {
+    hostName = "nixos";
+    networkmanager.enable = true;
+    firewall.checkReversePath = false;
+  };
 
-  # Set your time zone.
+  # Time and Locale
   time.timeZone = "Europe/Minsk";
-
-  # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
 
-  # Enable the X11 windowing system.
-  services.xserver.enable = true;
+  # Display and Desktop Environment
+  services.xserver = {
+    enable = true;
+    excludePackages = [ pkgs.xterm ];
+    xkb = {
+      layout = "us";
+      variant = "";
+    };
+  };
 
-  # Enable the GNOME Desktop Environment.
   services.displayManager.gdm.enable = true;
   services.desktopManager.gnome.enable = true;
-
-  services.gnome.core-apps.enable = false;
-  services.gnome.rygel.enable = false;
+  services.gnome = {
+    gnome-keyring.enable = true;
+    core-apps.enable = false;
+    rygel.enable = false;
+  };
+  security.pam.services.login.enableGnomeKeyring = true;
 
   environment.gnome.excludePackages = with pkgs; [
     gnome-tour
+    gnome-color-manager
   ];
 
-  # Configure keymap in X11
-  services.xserver.xkb = {
-    layout = "us";
-    variant = "";
-  };
-
-  # Enable CUPS to print documents.
+  # Services
   services.printing.enable = true;
+  services.udisks2.enable = true;
+  services.power-profiles-daemon.enable = true;
+  services.upower.enable = true;
+  documentation.doc.enable = false;
 
-  # Enable sound with pipewire.
+  # Sound with Pipewire
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
@@ -70,85 +82,107 @@
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
-    # If you want to use JACK applications, uncomment this
-    #jack.enable = true;
-
-    # use the example session manager (no others are packaged yet so this is enabled by default,
-    # no need to redefine it in your config for now)
-    #media-session.enable = true;
   };
 
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
-
-  # Define a user account. Don't forget to set a password with ‘passwd’.
+  # User Account
   users.users."evgeniye" = {
     isNormalUser = true;
     description = "Evgeniy Ermolov";
-    extraGroups = [ "networkmanager" "wheel" ];
-    packages = with pkgs; [
-    #  thunderbird
+    extraGroups = [ "networkmanager" "wheel" "docker" ];
+    shell = pkgs.fish;
+  };
+
+  # Shell and Desktop Programs
+  programs.fish.enable = true;
+  programs.niri.enable = true;
+  programs.amnezia-vpn.enable = true;
+  virtualisation.docker.enable = true;
+
+  # Nix Helper
+  programs.nh = {
+    enable = true;
+    flake = "/etc/nixos";
+  };
+
+  programs.nix-ld.enable = true;
+
+  # Nix Package Manager settings
+  nixpkgs.config.allowUnfree = true;
+
+  nix.settings = {
+    experimental-features = [ "nix-command" "flakes" ];
+    substituters = [
+      "https://cache.nixos.org"
+      "https://noctalia.cachix.org"
+    ];
+    trusted-public-keys = [
+      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+      "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
     ];
   };
 
-  # Enable flakes
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 7d";
+  };
 
-  # Install firefox.
-  programs.firefox.enable = true;
- 
- # Install niri.
-  programs.niri.enable = true;
-
-  # Install ZSH
-  programs.zsh.enable = true;
-  users.users.evgeniye.shell = pkgs.zsh;
-  
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
-
-  # List packages installed in system profile. To search, run: $ nix search wget
+  # Packages installed in system profile
   environment.systemPackages = with pkgs; [
     git
     wget
     curl
+    htop
+    udiskie
+    chromium
+    amnezia-vpn
+    stdenv.cc.cc.lib
+    zlib
+    glibc
+    openssl
   ];
 
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
-
-  # List services that you want to enable:
-
-  # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
-
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
-
-  # This value determines the NixOS release from which the default
-  # settings for stateful data, like file locations and database versions
-  # on your system were taken. It‘s perfectly fine and recommended to leave
-  # this value at the release version of the first install of this system.
-  # Before changing this value read the documentation for this option
-  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "26.05"; # Did you read the comment?
-  
   # Fonts configuration
-  fonts.packages = with pkgs; [
-    font-awesome
-    nerd-fonts.symbols-only
-    nerd-fonts.jetbrains-mono
-  ];
+  fonts = {
+    packages = with pkgs; [
+      font-awesome
+      nerd-fonts.symbols-only
+      nerd-fonts.jetbrains-mono
+      noto-fonts
+      noto-fonts-cjk-sans
+      noto-fonts-color-emoji
+      liberation_ttf
+      inter
+      roboto
+    ];
+
+    fontconfig.defaultFonts = {
+      serif = [ "Liberation Serif" "Noto Serif" ];
+      sansSerif = [ "Inter" "Liberation Sans" "Noto Sans" ];
+      monospace = [ "JetBrainsMono Nerd Font" "JetBrains Mono" ];
+    };
+  };
+
+  # XDG Desktop Portals configuration for native file pickers in Niri
+  xdg.portal = {
+    enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-gnome pkgs.xdg-desktop-portal-gtk ];
+    config.common.default = [ "gnome" "gtk" ];
+  };
+
+  # Environment variables for portals and Qt apps
+  environment.sessionVariables = {
+    QT_QPA_PLATFORMTHEME = "xdgdesktopportal";
+    TDESKTOP_USE_GTK_FILE_DIALOG = "1";
+    NIXOS_OZONE_WL = "1";
+  };
 
   # Home Manager
-  home-manager.backupFileExtension = "backup";
-  home-manager.users.evgeniye = import ./home.nix;
+  home-manager = {
+    backupCommand = "filename=$1; rm -rf \"$filename.backup\"; mv \"$filename\" \"$filename.backup\"";
+    extraSpecialArgs = { inherit inputs; };
+    users.evgeniye = import ./home.nix;
+  };
+
+  system.stateVersion = "26.05";
 }
