@@ -30,6 +30,12 @@
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
+    settings = {
+      General = {
+        FastConnectable = false;
+        ReconnectAttempts = 0;
+      };
+    };
   };
 
   # Networking
@@ -140,6 +146,8 @@
     zlib
     glibc
     openssl
+    zip
+    unzip
   ];
 
   # Fonts configuration

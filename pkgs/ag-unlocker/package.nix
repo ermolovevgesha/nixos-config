@@ -33,12 +33,10 @@ rustPlatform.buildRustPackage {
     makeWrapper
   ];
 
-  # Только openssl для сети, никакой графики
   buildInputs = [
     openssl
   ];
 
-  # Принудительно запускает только консоль (TUI)
   postInstall = ''
     wrapProgram $out/bin/ag_unlocker \
       --add-flags "--tui"

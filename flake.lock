@@ -3,11 +3,11 @@
     "ag-unlocker-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1792488263,
-        "narHash": "sha256-Sgw1UHE+2qgbQglXPBN9oVN7+T1KDLz0myO6W00jWAk=",
+        "lastModified": 1792916563,
+        "narHash": "sha256-mDDrkiqqYMCisFdVta9otZeCfZrxr22NS0+Gf1tcAAs=",
         "owner": "confeden",
         "repo": "Antigravity",
-        "rev": "7b824ea868fe268c8ecc60e2516a6c0ce520fe6b",
+        "rev": "df7e31eebb54d36d1f17d0f45f210d430e2830e0",
         "type": "github"
       },
       "original": {

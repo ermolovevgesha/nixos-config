@@ -11,7 +11,7 @@
     noctalia.inputs.nixpkgs.follows = "nixpkgs";
 
     ag-unlocker-src.url = "github:confeden/Antigravity";
-    ag-unlocker-src.flake = false;  # это не flake, просто исходники
+    ag-unlocker-src.flake = false;
   };
 
   outputs = { self, nixpkgs, home-manager, noctalia, ag-unlocker-src, ... }@inputs:
@@ -25,8 +25,6 @@
         src = ag-unlocker-src;
       };
     in {
-    # Запустить без установки: nix run /etc/nixos#ag-unlocker
-    # Собрать:                 nix build /etc/nixos#ag-unlocker
     packages.${system} = {
       ag-unlocker = ag-unlocker-pkg;
       default = ag-unlocker-pkg;
