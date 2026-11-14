@@ -56,7 +56,6 @@
     fzf
     wl-clipboard
 
-    docker
     docker-compose
     lazydocker
 
@@ -65,6 +64,12 @@
     ffmpegthumbnailer
     imagemagick
     poppler
+    jq
+    fd
+    ripgrep
+    p7zip
+    imv
+    mpv
 
     uv
 
@@ -73,11 +78,32 @@
     rose-pine-gtk-theme
   ];
 
+  programs.zoxide = {
+    enable = true;
+    enableFishIntegration = true;
+  };
+
+  programs.atuin = {
+    enable = true;
+    enableFishIntegration = true;
+    settings = {
+      style = "compact";
+      inline_height = 20;
+      search_mode = "fuzzy";
+      filter_mode_shell_up_key_binding = "directory";
+    };
+  };
+
+  programs.television = {
+    enable = true;
+    enableFishIntegration = true;
+  };
+
   programs.yazi = {
     enable = true;
     enableFishIntegration = true;
     settings = {
-      manager = {
+      mgr = {
         show_hidden = true;
         sort_by = "natural";
       };
@@ -86,6 +112,41 @@
         max_height = 1000;
         image_quality = 90;
       };
+      opener = {
+        edit = [
+          { run = ''zeditor "$@"''; orphan = true; desc = "Zed"; }
+          { run = ''code "$@"''; orphan = true; desc = "VS Code"; }
+          { run = ''$EDITOR "$@"''; block = true; desc = "Terminal editor"; }
+        ];
+        pdf = [
+          { run = ''firefox "$@"''; orphan = true; desc = "Firefox"; }
+          { run = ''zathura "$@"''; orphan = true; desc = "Zathura"; }
+        ];
+        image = [
+          { run = ''imv "$@"''; orphan = true; desc = "imv"; }
+        ];
+        video = [
+          { run = ''mpv "$@"''; orphan = true; desc = "mpv"; }
+        ];
+        open = [
+          { run = ''xdg-open "$1"''; orphan = true; desc = "System default"; }
+        ];
+      };
+      open.rules = [
+        { mime = "application/pdf"; use = [ "pdf" "open" ]; }
+        { mime = "image/*"; use = [ "image" "open" ]; }
+        { mime = "video/*"; use = [ "video" "open" ]; }
+        { mime = "audio/*"; use = [ "video" "open" ]; }
+        { mime = "text/*"; use = [ "edit" "open" ]; }
+        { mime = "*"; use = [ "open" "edit" ]; }
+      ];
+    };
+    keymap = {
+      mgr.prepend_keymap = [
+        { on = "<C-n>"; run = "shell --orphan 'nautilus .'"; desc = "Open in Nautilus"; }
+        { on = "<C-e>"; run = "shell --orphan 'zeditor .'"; desc = "Open in Zed"; }
+        { on = "<C-y>"; run = ''shell 'for f in "$@"; do printf "file://%s\n" "$f"; done | sed "s/ /%20/g" | wl-copy -t text/uri-list' ''; desc = "Copy file to clipboard"; }
+      ];
     };
   };
 
@@ -136,6 +197,25 @@
     "htop" = {
       name = "Htop";
       noDisplay = true;
+    };
+  };
+
+  xdg.mimeApps = {
+    enable = true;
+    defaultApplications = {
+      "text/html" = "firefox.desktop";
+      "x-scheme-handler/http" = "firefox.desktop";
+      "x-scheme-handler/https" = "firefox.desktop";
+      "x-scheme-handler/about" = "firefox.desktop";
+      "x-scheme-handler/unknown" = "firefox.desktop";
+      "application/pdf" = "firefox.desktop";
+      "image/png" = "imv.desktop";
+      "image/jpeg" = "imv.desktop";
+      "image/webp" = "imv.desktop";
+      "image/gif" = "imv.desktop";
+      "video/mp4" = "mpv.desktop";
+      "video/x-matroska" = "mpv.desktop";
+      "video/webm" = "mpv.desktop";
     };
   };
 

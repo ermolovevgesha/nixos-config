@@ -19,6 +19,7 @@
 
   # Kernel and Hardware
   boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelParams = [ "amd_pstate=active" ];
   boot.kernelModules = [ "usbmon" ];
   boot.initrd.kernelModules = [ "amdgpu" ];
 
@@ -77,7 +78,13 @@
   services.printing.enable = true;
   services.udisks2.enable = true;
   services.power-profiles-daemon.enable = true;
+  services.udev.extraRules = ''
+    SUBSYSTEM=="power_supply", ENV{POWER_SUPPLY_ONLINE}=="0", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set power-saver"
+    SUBSYSTEM=="power_supply", ENV{POWER_SUPPLY_ONLINE}=="1", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set balanced"
+  '';
   services.upower.enable = true;
+  services.fstrim.enable = true;
+  zramSwap.enable = true;
   documentation.doc.enable = false;
 
   # Sound with Pipewire
@@ -102,11 +109,19 @@
   programs.fish.enable = true;
   programs.niri.enable = true;
   programs.amnezia-vpn.enable = true;
-  virtualisation.docker.enable = true;
+  virtualisation.docker = {
+    enable = true;
+    enableOnBoot = false;
+  };
 
   # Nix Helper
   programs.nh = {
     enable = true;
+    clean = {
+      enable = true;
+      dates = "weekly";
+      extraArgs = "--keep-since 7d --keep 3";
+    };
     flake = "/etc/nixos";
   };
 
@@ -117,6 +132,7 @@
 
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
+    auto-optimise-store = true;
     substituters = [
       "https://cache.nixos.org"
       "https://noctalia.cachix.org"
@@ -127,27 +143,20 @@
     ];
   };
 
-  nix.gc = {
-    automatic = true;
-    dates = "weekly";
-    options = "--delete-older-than 7d";
-  };
-
   # Packages installed in system profile
   environment.systemPackages = with pkgs; [
     git
     wget
     curl
     htop
-    udiskie
     chromium
-    amnezia-vpn
     stdenv.cc.cc.lib
     zlib
     glibc
     openssl
     zip
     unzip
+    python3
   ];
 
   # Fonts configuration
